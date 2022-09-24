@@ -15,9 +15,9 @@ on:
 
 jobs:
   coger_cita:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
-      - name: Variable day
+      - name: Variables
         if: github.event.inputs.relative_day == '' || github.event.inputs.relative_day == ''
         run: |
           echo "RELATIVE_DAY=2 days later" >> $GITHUB_ENV
@@ -28,7 +28,6 @@ jobs:
 
       # Deploy pod with secrets
       - name: Deploy pod
-        uses: actions-hub/kubectl@master
         env:
           USER_GYM: ${{ secrets.USER_GYM }}
           PASS: ${{ secrets.PASS }}
@@ -36,6 +35,6 @@ jobs:
           SURNAME: ${{ secrets.SURNAME }}
           RELATIVE_DAY: ${{ github.event.inputs.relative_day || env.RELATIVE_DAY }}
           HOUR: ${{ github.event.inputs.hour || env.HOUR }}
-        with:
-          args: apply -f deployments/testalone-pods.yaml
+        run: |
+          kubectl apply -f deployments/testalone-pods.yaml
       
