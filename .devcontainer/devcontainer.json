@@ -44,7 +44,8 @@
 		"robocorp.robotframework-lsp",
 		"pkief.material-icon-theme",
 		"tabeyti.jenkins-jack",
-		"eamodio.gitlens"
+		"eamodio.gitlens",
+		"github.copilot"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.

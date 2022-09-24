@@ -1,26 +1,56 @@
 *** Settings ***
-Variables  variables/variables.py
+# Variables  variables/variables.py
+Library  function.py
 Library  SeleniumLibrary
 Library    Collections
 
 *** Variables ***
+${IS_REMOTE}  False
+
 @{MESES}  enero  febrero  marzo  abril  mayo  junio  julio  agosto  septiembre  octubre  noviembre  diciembre
-${DIA}  2
-${MES}  9
-${HORA}  07:30
-${POLIDEPORTIVO}  Cruces
+${RELATIVE_DAY}  %{RELATIVE_DAY}  # 2 days later
+${DIA}  %{DAY}  # 2
+${MES}  %{MONTH}  # 9
+${HOUR}  %{HOUR}  # 18:30
+${GYM}  %{GYM}    # Cruces
+
+${USER}  %{USER_GYM}  # variables.py
+${PASS}  %{PASS}
+${NAME}  %{NAME}
+${SURNAME}  %{SURNAME}
+
 
 *** Test Cases ***
 PillarClase
+    Calcular Dia
     Login
     Acceder SalaMultitrabajo
-    Coger Clase
+    Coger Clase  ${dia_}
     Confirmar Compra
 
 
 *** Keywords ***
-Login
-    Open Browser  https://deportesweb.madrid.es/DeportesWeb/Login  chrome
+Calcular Dia
+    ${dia_rel}  Get Variable Value  ${RELATIVE_DAY}
+    IF  '${dia_rel}'=='None'
+        RETURN
+    ELSE
+        Log to console  ${dia_rel}
+        ${FECHA}  Get Date  ${dia_rel}
+        Log to console  ${FECHA}
+        ${DIA}  Set Variable  ${FECHA}[day]
+        Set Global Variable    ${DIA}
+        ${MES}  Set Variable  ${FECHA}[month]
+        Set Global Variable    ${MES}
+    END
+
+
+Login 
+    IF  '${IS_REMOTE}'=='True'
+        Open Browser  https://deportesweb.madrid.es/DeportesWeb/Login  chrome  remote_url=http://localhost:4444
+    ELSE
+        Open Browser  https://deportesweb.madrid.es/DeportesWeb/Login  chrome
+    END
     Maximize Browser Window
     Wait Until Element Is Visible    //a[contains(text(),'Acceder')]
     Click Element    //a[contains(text(),'Acceder')]
@@ -38,12 +68,13 @@ Acceder SalaMultitrabajo
     Click Element  //*[text()='Sala multitrabajo']  
     
     Wait Until Element Is Visible    //input[@type='text']
-    Input Text  //input[@type='text']  ${POLIDEPORTIVO}
+    Input Text  //input[@type='text']  ${GYM}
 
-    Wait Until Element Is Visible    //a[contains(.,'${POLIDEPORTIVO}')]
-    Click Element    //a[contains(.,'${POLIDEPORTIVO}')]
+    Wait Until Element Is Visible    //a[contains(.,'${GYM}')]
+    Click Element    //a[contains(.,'${GYM}')]
 
 Coger Clase
+    [Arguments]  ${dia_}
     Comment  Cambiar mes
     Wait Until Element Is Visible    (//div[@class='datepicker']//table)[1]//th[@class='picker-switch']
     ${index_month}  Evaluate  ${MES} - 1
@@ -66,21 +97,16 @@ Coger Clase
     END
 
     # Dia
-    Wait Until Element Is Visible  (//td[text()='${DIA}'][not(contains(@class,'disabled'))])[1]
-    Click Element  (//td[text()='${DIA}'][not(contains(@class,'disabled'))])[1]
+    Wait Until Element Is Visible  (//td[text()='${dia_}'][not(contains(@class,'disabled'))])[1]
+    Click Element  (//td[text()='${dia_}'][not(contains(@class,'disabled'))])[1]
 
     # Hora
-    Wait Until Element Is Visible    //ul[@class='media-list clearfix']//h4[text()='${HORA}']
-    Click Element    //ul[@class='media-list clearfix']//h4[text()='${HORA}']
+    Wait Until Element Is Visible    //ul[@class='media-list clearfix']//h4[text()='${HOUR}']  10
+    Click Element    //ul[@class='media-list clearfix']//h4[text()='${HOUR}']
 
 Confirmar Compra
     Wait Until Element Is Visible  //button[@id='ContentFixedSection_uCarritoConfirmar_btnConfirmCart']
-    # Input Text  //input[@id='ContentFixedSection_uCarritoConfirmar_txtNombre']  ${NAME}
-    # Input Text  //input[@id='ContentFixedSection_uCarritoConfirmar_txtApellidos']  ${SURNAME}
-    # Input Text  //input[@id='ContentFixedSection_uCarritoConfirmar_txtCorreoElectronico']  ${USER}  
-    # Input Text  //input[@id='ContentFixedSection_uCarritoConfirmar_txtRepitaCorreoElectronico']  ${USER}  
 
     Sleep   1
     Click Element  //button[@id='ContentFixedSection_uCarritoConfirmar_btnConfirmCart']
-
-    Sleep  10000
+    Capture Page Screenshot
