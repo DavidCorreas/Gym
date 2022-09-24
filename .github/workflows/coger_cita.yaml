@@ -17,14 +17,12 @@ jobs:
   coger_cita:
     runs-on: ubuntu-latest
     steps:
-      - name: Variables
-        if: github.event.inputs.relative_day == ''
+      - name: Variable day
+        if: github.event.inputs.relative_day == '' || github.event.inputs.relative_day == ''
         run: |
           echo "RELATIVE_DAY=2 days later" >> $GITHUB_ENV
-        if: github.event.inputs.hour == ''
-        run: |
           echo "HOUR=9:00" >> $GITHUB_ENV
-
+          
       - name: Checkout
         uses: actions/checkout@v2
 
